@@ -1,13 +1,34 @@
+from typing import Any
+
 from langgraph.graph import END, START, StateGraph
 
 from app.graph.nodes import GraphNodes
 from app.graph.state import GraphState
+from app.schemas.task import ReviewOutput
 
 
-def _extract_review_decision(review: object) -> str:
+ALLOWED_REVIEW_DECISIONS = {"pass", "needs_revision", "needs_more_evidence"}
+
+
+def _normalize_review(review: dict[str, Any] | ReviewOutput) -> dict[str, Any]:
+    if isinstance(review, ReviewOutput):
+        return review.model_dump()
     if isinstance(review, dict):
-        return review["decision"]
-    return review.decision
+        return review
+    raise TypeError("review 节点必须返回 dict 或 ReviewOutput")
+
+
+def _normalize_reviewer_result(result: dict[str, Any]) -> dict[str, Any]:
+    normalized = dict(result)
+    normalized["review"] = _normalize_review(result["review"])
+    return normalized
+
+
+def _extract_review_decision(review: dict[str, Any]) -> str:
+    decision = review["decision"]
+    if decision not in ALLOWED_REVIEW_DECISIONS:
+        raise ValueError(f"非法 review decision: {decision}")
+    return str(decision)
 
 
 def _prepare_retry(state: GraphState) -> dict:
@@ -35,7 +56,10 @@ def build_workflow(nodes: GraphNodes, checkpointer, max_revision_rounds: int = 2
     builder.add_node("planner", nodes.planner)
     builder.add_node("researcher", nodes.researcher)
     builder.add_node("writer", nodes.writer)
-    builder.add_node("reviewer", nodes.reviewer)
+    builder.add_node(
+        "reviewer",
+        lambda state: _normalize_reviewer_result(nodes.reviewer(state)),
+    )
     builder.add_node("finalize", nodes.finalize)
     builder.add_node("prepare_research_retry", _prepare_retry)
     builder.add_node("prepare_revision_retry", _prepare_retry)

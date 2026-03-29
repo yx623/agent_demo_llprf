@@ -8,7 +8,7 @@ class GraphState(TypedDict, total=False):
     plan: dict
     research: dict
     draft: str
-    review: object
+    review: dict[str, object]
     revision_count: int
     status: str
     final_output: str

@@ -2,6 +2,7 @@ import importlib
 import sys
 from types import ModuleType
 
+import pytest
 from langgraph.checkpoint.memory import MemorySaver
 
 from app.core.config import Settings
@@ -62,6 +63,8 @@ def test_workflow_research_retry_path_accepts_review_output():
     assert result["final_output"].startswith("# Redis 教学稿")
     assert researcher_calls["count"] == 2
     assert result["revision_count"] == 1
+    assert isinstance(result["review"], dict)
+    assert result["review"]["decision"] == "pass"
 
 
 def test_workflow_stops_after_revision_limit():
@@ -88,6 +91,24 @@ def test_workflow_stops_after_revision_limit():
     assert result["status"] == "failed"
     assert result["revision_count"] == 1
     assert writer_calls["count"] == 2
+
+
+def test_workflow_raises_on_invalid_review_decision():
+    nodes = GraphNodes(
+        router=lambda state: {"route": "new"},
+        planner=lambda state: {"plan": {"objective": "解释 Redis"}},
+        researcher=lambda state: {"research": {"summary": "Redis 负责缓存"}},
+        writer=lambda state: {"draft": "# Redis 教学稿"},
+        reviewer=lambda state: {
+            "review": {"decision": "approve", "comments": ["错误的决策值"]}
+        },
+        finalize=lambda state: {"final_output": state["draft"], "status": "succeeded"},
+    )
+
+    workflow = build_workflow(nodes, checkpointer=None, max_revision_rounds=1)
+
+    with pytest.raises(ValueError, match="非法 review decision"):
+        workflow.invoke({"user_input": "解释 Redis", "revision_count": 0})
 
 
 def test_build_checkpointer_in_memory_without_postgres_extra():
