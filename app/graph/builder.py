@@ -4,16 +4,32 @@ from app.graph.nodes import GraphNodes
 from app.graph.state import GraphState
 
 
-def _route_after_review(state: GraphState) -> str:
-    decision = state["review"]["decision"]
+def _extract_review_decision(review: object) -> str:
+    if isinstance(review, dict):
+        return review["decision"]
+    return review.decision
+
+
+def _prepare_retry(state: GraphState) -> dict:
+    return {"revision_count": state.get("revision_count", 0) + 1}
+
+
+def _fail_after_revision_limit(state: GraphState) -> dict:
+    return {"status": "failed"}
+
+
+def _route_after_review(state: GraphState, *, max_revision_rounds: int) -> str:
+    decision = _extract_review_decision(state["review"])
     if decision == "pass":
         return "finalize"
+    if state.get("revision_count", 0) >= max_revision_rounds:
+        return "fail"
     if decision == "needs_more_evidence":
-        return "researcher"
-    return "writer"
+        return "prepare_research_retry"
+    return "prepare_revision_retry"
 
 
-def build_workflow(nodes: GraphNodes, checkpointer):
+def build_workflow(nodes: GraphNodes, checkpointer, max_revision_rounds: int = 2):
     builder = StateGraph(GraphState)
     builder.add_node("router", nodes.router)
     builder.add_node("planner", nodes.planner)
@@ -21,6 +37,9 @@ def build_workflow(nodes: GraphNodes, checkpointer):
     builder.add_node("writer", nodes.writer)
     builder.add_node("reviewer", nodes.reviewer)
     builder.add_node("finalize", nodes.finalize)
+    builder.add_node("prepare_research_retry", _prepare_retry)
+    builder.add_node("prepare_revision_retry", _prepare_retry)
+    builder.add_node("fail", _fail_after_revision_limit)
 
     builder.add_edge(START, "router")
     builder.add_edge("router", "planner")
@@ -29,14 +48,21 @@ def build_workflow(nodes: GraphNodes, checkpointer):
     builder.add_edge("writer", "reviewer")
     builder.add_conditional_edges(
         "reviewer",
-        _route_after_review,
+        lambda state: _route_after_review(
+            state,
+            max_revision_rounds=max_revision_rounds,
+        ),
         {
             "finalize": "finalize",
-            "researcher": "researcher",
-            "writer": "writer",
+            "prepare_research_retry": "prepare_research_retry",
+            "prepare_revision_retry": "prepare_revision_retry",
+            "fail": "fail",
         },
     )
+    builder.add_edge("prepare_research_retry", "researcher")
+    builder.add_edge("prepare_revision_retry", "writer")
     builder.add_edge("finalize", END)
+    builder.add_edge("fail", END)
 
     if checkpointer is None:
         return builder.compile()
