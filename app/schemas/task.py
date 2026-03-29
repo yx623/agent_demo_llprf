@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 
@@ -23,7 +25,7 @@ class WriterOutput(BaseModel):
 
 
 class ReviewOutput(BaseModel):
-    decision: str
+    decision: Literal["pass", "needs_revision", "needs_more_evidence"]
     comments: list[str]
 
 
