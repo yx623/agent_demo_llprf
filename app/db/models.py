@@ -22,7 +22,15 @@ class TaskRun(Base):
     user_id: Mapped[str] = mapped_column(String(64), index=True)
     title: Mapped[str] = mapped_column(String(255))
     input_text: Mapped[str] = mapped_column(Text)
-    status: Mapped[RunStatus] = mapped_column(SqlEnum(RunStatus), default=RunStatus.PENDING)
+    status: Mapped[RunStatus] = mapped_column(
+        SqlEnum(
+            RunStatus,
+            values_callable=lambda enum_cls: [member.value for member in enum_cls],
+            validate_strings=True,
+            native_enum=False,
+        ),
+        default=RunStatus.PENDING,
+    )
     current_node: Mapped[str | None] = mapped_column(String(64), default=None)
     final_output: Mapped[str | None] = mapped_column(Text, default=None)
     error_message: Mapped[str | None] = mapped_column(Text, default=None)

@@ -9,9 +9,9 @@ class Settings(BaseSettings):
 
     app_env: str = Field("dev", alias="APP_ENV")
     log_level: str = Field("INFO", alias="LOG_LEVEL")
-    openai_api_key: str = Field(..., alias="OPENAI_API_KEY")
-    openai_base_url: str = Field(..., alias="OPENAI_BASE_URL")
-    openai_model: str = Field(..., alias="OPENAI_MODEL")
+    openai_api_key: str | None = Field(None, alias="OPENAI_API_KEY")
+    openai_base_url: str | None = Field(None, alias="OPENAI_BASE_URL")
+    openai_model: str | None = Field(None, alias="OPENAI_MODEL")
     postgres_dsn: str = Field(..., alias="POSTGRES_DSN")
     redis_url: str = Field("redis://localhost:6379/0", alias="REDIS_URL")
     max_revision_rounds: int = Field(2, alias="MAX_REVISION_ROUNDS")

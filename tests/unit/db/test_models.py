@@ -1,4 +1,6 @@
-from sqlalchemy import create_engine
+import pytest
+from sqlalchemy import create_engine, text
+from sqlalchemy.exc import StatementError
 from sqlalchemy.orm import sessionmaker
 
 from app.db.base import Base
@@ -44,3 +46,44 @@ def test_task_run_memory_and_artifact_can_persist():
     assert saved_run.title == "Redis 教学任务"
     assert saved_memory.namespace == "preference"
     assert saved_artifact.artifact_type == "draft"
+
+
+def test_task_run_status_persists_enum_value():
+    engine = create_engine("sqlite+pysqlite:///:memory:", future=True)
+    Base.metadata.create_all(engine)
+    SessionLocal = sessionmaker(bind=engine, expire_on_commit=False)
+
+    with SessionLocal() as session:
+        session.add(
+            TaskRun(
+                user_id="demo-user",
+                title="状态测试",
+                input_text="检查枚举持久化值",
+                status=RunStatus.RUNNING,
+            )
+        )
+        session.commit()
+
+    with engine.connect() as connection:
+        saved_status = connection.execute(text("SELECT status FROM task_runs")).scalar_one()
+
+    assert saved_status == "running"
+
+
+def test_task_run_status_rejects_invalid_string():
+    engine = create_engine("sqlite+pysqlite:///:memory:", future=True)
+    Base.metadata.create_all(engine)
+    SessionLocal = sessionmaker(bind=engine, expire_on_commit=False)
+
+    with SessionLocal() as session:
+        session.add(
+            TaskRun(
+                user_id="demo-user",
+                title="非法状态测试",
+                input_text="检查非法状态是否被拒绝",
+                status="bogus",
+            )
+        )
+
+        with pytest.raises((StatementError, LookupError)):
+            session.commit()
