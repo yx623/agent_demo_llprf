@@ -36,7 +36,7 @@ class LongTermMemoryService:
             stmt = (
                 select(MemoryItem)
                 .where(MemoryItem.user_id == user_id)
-                .order_by(MemoryItem.created_at.desc())
+                .order_by(MemoryItem.created_at.desc(), MemoryItem.id.desc())
             )
             return list(session.scalars(stmt))
 

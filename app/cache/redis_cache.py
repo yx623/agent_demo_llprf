@@ -21,10 +21,13 @@ class RedisCache:
         if raw is None:
             return None
 
-        if isinstance(raw, bytes):
-            raw = raw.decode("utf-8")
+        try:
+            if isinstance(raw, bytes):
+                raw = raw.decode("utf-8")
 
-        return json.loads(raw)
+            return json.loads(raw)
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            return None
 
     def set_json(self, key: str, value: dict[str, Any], ttl: int) -> None:
         if not self.enabled:
