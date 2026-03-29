@@ -13,7 +13,11 @@ class RedisCache:
         if not self.enabled:
             return None
 
-        raw = self.client.get(key)
+        try:
+            raw = self.client.get(key)
+        except Exception:
+            return None
+
         if raw is None:
             return None
 
@@ -27,4 +31,7 @@ class RedisCache:
             return
 
         payload = json.dumps(value, ensure_ascii=False)
-        self.client.setex(key, ttl, payload)
+        try:
+            self.client.setex(key, ttl, payload)
+        except Exception:
+            return
