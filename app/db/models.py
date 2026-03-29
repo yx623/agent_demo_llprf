@@ -1,14 +1,14 @@
 from datetime import datetime
-from enum import StrEnum
+from enum import Enum
 from uuid import uuid4
 
-from sqlalchemy import DateTime, Enum, ForeignKey, String, Text, func
+from sqlalchemy import DateTime, Enum as SqlEnum, ForeignKey, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
 
 
-class RunStatus(StrEnum):
+class RunStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
     SUCCEEDED = "succeeded"
@@ -22,7 +22,7 @@ class TaskRun(Base):
     user_id: Mapped[str] = mapped_column(String(64), index=True)
     title: Mapped[str] = mapped_column(String(255))
     input_text: Mapped[str] = mapped_column(Text)
-    status: Mapped[RunStatus] = mapped_column(Enum(RunStatus), default=RunStatus.PENDING)
+    status: Mapped[RunStatus] = mapped_column(SqlEnum(RunStatus), default=RunStatus.PENDING)
     current_node: Mapped[str | None] = mapped_column(String(64), default=None)
     final_output: Mapped[str | None] = mapped_column(Text, default=None)
     error_message: Mapped[str | None] = mapped_column(Text, default=None)
