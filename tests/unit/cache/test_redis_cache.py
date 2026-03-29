@@ -60,3 +60,9 @@ def test_redis_cache_get_json_returns_none_when_payload_is_not_json():
     cache = RedisCache(client=RawRedisClient(b"not-json"), enabled=True)
 
     assert cache.get_json("planner:demo") is None
+
+
+def test_redis_cache_get_json_returns_none_when_payload_is_not_object():
+    cache = RedisCache(client=RawRedisClient("[1, 2, 3]"), enabled=True)
+
+    assert cache.get_json("planner:demo") is None
