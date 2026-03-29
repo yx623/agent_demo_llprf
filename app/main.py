@@ -17,6 +17,14 @@ async def run_task(request: TaskRequest):
     return service.run_task(request)
 
 
+@app.post("/tasks/{run_id}/resume")
+async def resume_task(run_id: str):
+    run = service.resume_task(run_id)
+    if run is None:
+        raise HTTPException(status_code=404, detail="任务不存在")
+    return run
+
+
 @app.get("/tasks/{run_id}")
 async def get_task(run_id: str):
     run = service.get_run(run_id)

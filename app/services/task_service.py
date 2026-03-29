@@ -16,8 +16,8 @@ class TaskService:
             "status": "ok",
             "checks": {
                 "api_config": "configured",
-                "database": "pending-runtime-check",
-                "redis": "pending-runtime-check",
+                "database": "not_checked",
+                "redis": "not_checked",
             },
         }
 
@@ -32,8 +32,14 @@ class TaskService:
         self._runs[run_id] = run
         return run
 
+    def resume_task(self, run_id: str) -> TaskRunView | None:
+        return self._runs.get(run_id)
+
     def get_run(self, run_id: str) -> TaskRunView | None:
         return self._runs.get(run_id)
+
+    def list_runs(self) -> list[TaskRunView]:
+        return list(self._runs.values())
 
     def list_memory(self, user_id: str) -> list[MemoryView]:
         if self.memory_service is None:

@@ -25,6 +25,29 @@ def run(title: str, input_text: str, user_id: str = "demo-user"):
     typer.echo(json.dumps(result.model_dump(), ensure_ascii=False, indent=2))
 
 
+@app.command()
+def resume(run_id: str):
+    """恢复一个已有任务。"""
+    result = service.resume_task(run_id)
+    if result is None:
+        raise typer.Exit(code=1)
+    typer.echo(json.dumps(result.model_dump(), ensure_ascii=False, indent=2))
+
+
+@app.command()
+def history():
+    """查看当前会话中的运行历史。"""
+    payload = [item.model_dump() for item in service.list_runs()]
+    typer.echo(json.dumps(payload, ensure_ascii=False, indent=2))
+
+
+@app.command()
+def memory(user_id: str = "demo-user"):
+    """查看指定用户的长期记忆。"""
+    payload = [item.model_dump(mode="json") for item in service.list_memory(user_id)]
+    typer.echo(json.dumps(payload, ensure_ascii=False, indent=2))
+
+
 def main():
     app()
 
