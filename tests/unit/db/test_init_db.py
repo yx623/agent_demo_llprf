@@ -18,11 +18,6 @@ def test_init_db_script_creates_expected_tables(tmp_path):
         "POSTGRES_DSN": f"sqlite+pysqlite:///{db_path}",
         "REDIS_URL": "redis://localhost:6379/0",
     })
-    existing_pythonpath = env.get("PYTHONPATH")
-    env["PYTHONPATH"] = (
-        f"{repo_root}:{existing_pythonpath}" if existing_pythonpath else str(repo_root)
-    )
-
     completed = subprocess.run(
         [sys.executable, "scripts/init_db.py"],
         cwd=repo_root,
