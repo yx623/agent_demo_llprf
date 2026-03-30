@@ -1,3 +1,10 @@
+"""研究型 Agent。
+
+它读取用户请求和长期记忆，产出后续写作所需的研究摘要。
+这里适合教学展示“模型并不是直接读数据库”，而是先把长期
+记忆整理成 prompt 上下文，再交给模型理解。
+"""
+
 from app.schemas.task import ResearchOutput
 
 

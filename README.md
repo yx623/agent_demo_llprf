@@ -25,11 +25,19 @@
 
 ## 教学阅读顺序
 
-1. `docs/01-overview.md`
-2. `docs/02-langchain-vs-langgraph.md`
-3. `docs/03-memory-and-cache.md`
-4. `docs/04-cli-and-api.md`
-5. `docs/05-walkthrough.md`
+1. `docs/06-study-guide.md`
+2. `docs/01-overview.md`
+3. `docs/02-langchain-vs-langgraph.md`
+4. `docs/03-memory-and-cache.md`
+5. `docs/04-cli-and-api.md`
+6. `docs/05-walkthrough.md`
+
+## 学习入口
+
+如果你是第一次阅读这个项目，优先看：
+
+- `docs/06-study-guide.md`：系统学习路径、项目结构与阅读顺序
+- `docs/05-walkthrough.md`：按命令行和 API 跑通一次完整演示
 
 ## 常用演示命令
 

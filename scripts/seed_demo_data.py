@@ -1,6 +1,7 @@
 import sys
 from pathlib import Path
 
+# 允许直接以脚本方式运行，而不是必须先安装成包。
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
@@ -11,6 +12,7 @@ from app.memory.long_term import LongTermMemoryService
 
 
 def main() -> None:
+    """写入一条最小演示记忆。"""
     settings = get_settings()
     session_factory = build_session_factory(settings)
     memory_service = LongTermMemoryService(session_factory)

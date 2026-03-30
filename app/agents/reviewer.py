@@ -1,3 +1,10 @@
+"""审校型 Agent。
+
+这个 Agent 不负责重写内容，只负责判断当前草稿是否可以直接
+通过，还是需要补证据、继续改写。它的输出会直接驱动 LangGraph
+ 的路由，因此结构化约束尤其重要。
+"""
+
 from app.schemas.task import ReviewOutput
 
 

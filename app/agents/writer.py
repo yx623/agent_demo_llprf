@@ -1,3 +1,9 @@
+"""写作型 Agent。
+
+writer 的职责是把“计划 + 研究摘要”整理成面向教学的 Markdown 草稿。
+这一步依然属于单 Agent 能力，不涉及工作流跳转。
+"""
+
 from app.schemas.task import PlanOutput, ResearchOutput, WriterOutput
 
 
